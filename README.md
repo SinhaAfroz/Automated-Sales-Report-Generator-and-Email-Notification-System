@@ -29,4 +29,4 @@ This project automates the generation and emailing of sales reports using Google
 
 3. **Copy and Paste the Script**:
    - Copy the following script and paste it into the Apps Script editor:
-   -script is given in text file
+   script is given in text file
