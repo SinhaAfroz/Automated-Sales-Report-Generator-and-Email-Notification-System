@@ -1,0 +1,152 @@
+function getSalesData() {
+  // Get the active sheet
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  
+  // Get the data range (all rows and columns with data)
+  var dataRange = sheet.getDataRange();
+  
+  // Get all the data as a 2D array
+  var data = dataRange.getValues();
+  
+  return data;
+}
+
+function generateSalesReport() {
+  try {
+    // Fetch the sales data from the Google Sheet
+    var data = getSalesData();
+    Logger.log('Sales data fetched successfully.');
+
+    // Create a new Google Document for the report
+    var doc = DocumentApp.create('Sales Report - ' + new Date().toDateString());
+    var body = doc.getBody();
+    Logger.log('Document created successfully.');
+
+    // Set the title of the report
+    body.appendParagraph('Sales Report').setHeading(DocumentApp.ParagraphHeading.HEADING1);
+
+    // Append the report date
+    body.appendParagraph('Report Date: ' + new Date().toLocaleDateString());
+    body.appendHorizontalRule();
+
+    // Initialize total sales amount
+    var totalSales = 0;
+
+    // Append a summary of the sales data
+    body.appendParagraph('Sales Data:').setHeading(DocumentApp.ParagraphHeading.HEADING2);
+
+    // // Loop through the sales data (skip header row)
+    // for (var i = 1; i < data.length; i++) {
+    //   var row = data[i];
+    //   var date = row[0];
+    //   var product = row[1];
+    //   var quantity = row[2];
+    //   var salesAmount = row[3];
+    //   var region = row[4];
+
+    //   // Append each sale detail to the document
+    //   body.appendParagraph('Date: ' + date + ', Product: ' + product + ', Quantity: ' + quantity + ', Sales Amount: $' + salesAmount + ', Region: ' + region);
+
+    //   // Add the sales amount to the total
+    //   totalSales += salesAmount;
+    // }
+
+    // // Append the total sales at the end of the report
+    // body.appendParagraph('Total Sales: $' + totalSales).setHeading(DocumentApp.ParagraphHeading.HEADING2);
+
+    // Create a table with the same number of rows as the data and 5 columns
+
+    var table = body.appendTable();
+
+    var headerRow = table.appendTableRow();
+
+    headerRow.appendTableCell('Date');
+
+    headerRow.appendTableCell('Product');
+
+    headerRow.appendTableCell('Quantity');
+
+    headerRow.appendTableCell('Sales Amount');
+
+    headerRow.appendTableCell('Region');
+
+
+
+    // Loop through the sales data (skip header row)
+
+    for (var i = 1; i < data.length; i++) {
+
+      var row = data[i];
+
+      var date = row[0].toString();
+
+      var product = row[1].toString();
+
+      var quantity = row[2].toString();
+
+      var salesAmount = row[3].toFixed(2).toString();
+
+      var region = row[4].toString();
+
+
+
+      // Append each sale detail to the table
+
+      var tableRow = table.appendTableRow();
+
+      tableRow.appendTableCell(date);
+
+      tableRow.appendTableCell(product);
+
+      tableRow.appendTableCell(quantity);
+
+      tableRow.appendTableCell('$' + salesAmount);
+
+      tableRow.appendTableCell(region);
+
+
+
+      // Add the sales amount to the total
+
+      totalSales += parseFloat(salesAmount);
+
+    }
+
+    // Append the total sales at the end of the report
+    body.appendParagraph('Total Sales: $' + totalSales.toFixed(2)).setHeading(DocumentApp.ParagraphHeading.HEADING2);
+
+    // Save and close the document
+    doc.saveAndClose();
+    Logger.log('Document saved and closed successfully.');
+
+    // Return the URL of the generated document
+    return doc.getUrl();
+  } catch (e) {
+    Logger.log('Error: ' + e.message);
+    throw new Error('Failed to generate sales report: ' + e.message);
+  }
+}
+
+
+
+function sendSalesReportEmail() {
+  try {
+    // Generate the sales report and get the document URL
+    var reportUrl = generateSalesReport();
+    Logger.log('Report URL: ' + reportUrl);
+    
+    // Define the email recipients (replace with actual email addresses)
+    var recipients = "recipients@gmail.com";
+    
+    // Set up the email subject and body
+    var subject = "Weekly Sales Report";
+    var body = "Hello,\n\nPlease find the weekly sales report at the following link:\n" + reportUrl + "\n\nBest regards,\nSales Team";
+    
+    // Send the email
+    GmailApp.sendEmail(recipients, subject, body);
+    Logger.log('Email sent successfully to ' + recipients);
+  } catch (e) {
+    Logger.log('Error: ' + e.message);
+    throw new Error('Failed to send sales report email: ' + e.message);
+  }
+}
